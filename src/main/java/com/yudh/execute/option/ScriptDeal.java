@@ -1,5 +1,7 @@
 package com.yudh.execute.option;
 
+import com.yudh.execute.constant.DataBaseConst;
+import com.yudh.execute.frame.MainFrame;
 import com.yudh.execute.utils.FileUtils;
 
 import java.io.File;
@@ -45,8 +47,16 @@ public class ScriptDeal {
     }
 
     public static void writeScript(File newScript, List<File> fileList){
+        String separator = " ";
+        String dbType = MainFrame.dbTypeText.getSelectedItem().toString();
+        if (DataBaseConst.MYSQL.equalsIgnoreCase(dbType)){
+            separator = "source ";
+        }
+        else if (DataBaseConst.ORACLE.equalsIgnoreCase(dbType)){
+            separator = "@ ";
+        }
         for (File file : fileList){
-            FileUtils.writeTxt(newScript,"@ "+file.getAbsolutePath(),true);
+            FileUtils.writeTxt(newScript,separator + file.getAbsolutePath(),true);
         }
     }
 }

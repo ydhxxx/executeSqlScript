@@ -315,10 +315,13 @@ public class MainFrame extends JFrame implements ActionListener {
             }
             finally {
                 CloseStream.closeConnection(connection);
-                // 删除前面生成的脚本文件
-                File files = new File(fileConfig.get(0)+"/"+fileConfig.get(1));
-                log.info("脚本文件：{}",files.getAbsolutePath());
-                FileUtils.deleteAllFiles(files);
+                if (file.isDirectory()){
+                    // 删除前面生成的脚本文件
+                    File files = new File(fileConfig.get(0)+"/"+fileConfig.get(1));
+                    log.info("脚本文件：{}",files.getAbsolutePath());
+                    FileUtils.deleteAllFiles(files);
+                }
+
             }
 
         }

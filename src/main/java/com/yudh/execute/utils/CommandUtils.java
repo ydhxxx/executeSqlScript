@@ -24,7 +24,6 @@ public class CommandUtils {
         String passWord = jdbcConfig.getPassword();
 
         log.info("jdbcConfig:{}",jdbcConfig);
-        String rootPath = FileUtils.getRootPath();
         String logPath = ".\\executeLogs\\"+scriptFileName+".log";
         File logFile = new File(logPath);
         FileUtils.createNewFile(logFile);
@@ -41,10 +40,10 @@ public class CommandUtils {
             log.info("脚本执行命令为:{}", logCommand);
         }
         else if (DataBaseConst.MYSQL.equals(dbType)){
-            command = preDirectory + " && cd " + scriptPath + " && mysql -h" + jdbcConfig.getIp() + " -P" + jdbcConfig.getPort() + " -u" +
-                    username + " -p" + passWord + " -D" + jdbcConfig.getDatabase() + " -e \"source " + scriptFileName + "\" >" + logPath + " 2>&1";
-            String logCommand = preDirectory + " && cd " + scriptPath + " && mysql -h" + jdbcConfig.getIp() + " -P" + jdbcConfig.getPort() + " -u" +
-                    username + " -p****** -D" + jdbcConfig.getDatabase() + " -e \"source " + scriptFileName + "\" >" + logPath + " 2>&1";
+            command = "cmd /c " + preDirectory + " && cd " + scriptPath + " && echo exit | mysql -h" + jdbcConfig.getIp() + " -P" + jdbcConfig.getPort() + " -u" +
+                    username + " -p" + passWord + " -D " + jdbcConfig.getDatabase() + " -e \"source " + scriptFileName + "\" >" + logFile.getAbsolutePath() + " 2>&1";
+            String logCommand = "cmd /c " + preDirectory + " && cd " + scriptPath + " && echo exit | mysql -h" + jdbcConfig.getIp() + " -P" + jdbcConfig.getPort() + " -u" +
+                    username + " -p****** -D " + jdbcConfig.getDatabase() + " -e \"source " + scriptFileName + "\" >" + logFile.getAbsolutePath() + " 2>&1";
             log.info("脚本执行命令为:{}",logCommand);
         }
         StringBuilder result = new StringBuilder("");

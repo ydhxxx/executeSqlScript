@@ -1,6 +1,6 @@
-oracle
-192.168.31.210:1521
-orcl
-light
-light
+mysql
+127.0.0.1:3306
+mysql
+root
+root
 
