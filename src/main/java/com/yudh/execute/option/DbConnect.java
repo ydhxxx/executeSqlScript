@@ -1,5 +1,7 @@
 package com.yudh.execute.option;
 
+import com.yudh.execute.bean.DataSourceBean;
+import com.yudh.execute.bean.DruidDataSourceBean;
 import com.yudh.execute.bean.JdbcConfig;
 import com.yudh.execute.constant.DataBaseConst;
 import com.yudh.execute.frame.MainFrame;
@@ -9,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * @Classname MysqlConnect
@@ -39,7 +41,16 @@ public class DbConnect {
             return null;
         }
         JdbcConfig jdbcConfig = new JdbcConfig(ipPort,database,user,password);
-        Connection connection = connectDataBase(jdbcConfig, dbType);
+
+        DataSourceBean dataSourceBean = getDataBaseConfig(jdbcConfig, dbType);
+        DruidDataSourceBean.setDataSource(dataSourceBean);
+        Connection connection = null;
+        try {
+            connection = DruidDataSourceBean.dataSource.getConnection();
+        } catch (SQLException e) {
+            log.error("获取数据库连接失败,", e);
+            MainFrame.appendTextArea("ERROR "+e.getMessage());
+        }
 
         // 验证连接的正确性
         if (connection == null){
@@ -50,18 +61,23 @@ public class DbConnect {
             MainFrame.appendTextArea("连接成功！");
             JOptionPane.showMessageDialog(null,"连接成功！","连接",JOptionPane.INFORMATION_MESSAGE);
             writFile();
-
+            // 将文件目录选择按钮以及执行脚本按钮置为可用状态
+            MainFrame.fileSelect.setEnabled(true);
+            MainFrame.execute.setEnabled(true);
         }
         return connection;
     }
 
+
+
     /**
-     * 获取数据库连接Connection对象
+     * 获取数据库连接配置，填充到DruidDataSource中
      * @param jdbcConfig
      * @param dbType
      * @return
      */
-    public static Connection connectDataBase(JdbcConfig jdbcConfig, String dbType){
+    public static DataSourceBean getDataBaseConfig(JdbcConfig jdbcConfig, String dbType){
+        DataSourceBean dataSourceBean = new DataSourceBean();
         String classDriver = "";
         String url = "";
         if (DataBaseConst.MYSQL.equalsIgnoreCase(dbType)){
@@ -72,16 +88,11 @@ public class DbConnect {
             classDriver = DataBaseConst.ORACLE_DRIVER;
             url = getOracleUrl(jdbcConfig);
         }
-        try {
-            Class.forName(classDriver);
-            Connection connection = DriverManager.getConnection(url, jdbcConfig.getUser(), jdbcConfig.getPassword());
-            MainFrame.appendTextArea("获取数据库连接成功！");
-            return connection;
-        } catch (Exception e) {
-            MainFrame.appendTextArea("ERROR "+e.getMessage());
-            log.error("获取数据连接失败",e);
-        }
-        return null;
+        dataSourceBean.setDriverClassName(classDriver);
+        dataSourceBean.setUrl(url);
+        dataSourceBean.setUserName(jdbcConfig.getUser());
+        dataSourceBean.setPassWord(jdbcConfig.getPassword());
+        return dataSourceBean;
     }
 
     /**

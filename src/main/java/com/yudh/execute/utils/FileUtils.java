@@ -3,6 +3,7 @@ package com.yudh.execute.utils;
 
 
 
+import cn.hutool.core.io.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -69,25 +70,11 @@ public class FileUtils {
      * @param file
      * @return
      */
-    public static String readFile(File file) {
+    public static StringBuilder readFile(File file, String charSet) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        BufferedReader bufferedReader = null;
-        InputStreamReader inputStreamReader = null;
-        try {
-            inputStreamReader = new InputStreamReader(new FileInputStream(file),"UTF-8");
-            bufferedReader = new BufferedReader(inputStreamReader);
-            String tempStr;
-            while ((tempStr = bufferedReader.readLine())!=null){
-                stringBuilder.append(tempStr).append(" ");
-            }
-            return stringBuilder.toString();
-        } catch (IOException e) {
-            log.error("读取文件内容失败",e);
-        } finally {
-            closed(bufferedReader);
-            closed(inputStreamReader);
-        }
-        return null;
+        String content = org.apache.commons.io.FileUtils.readFileToString(file, charSet);
+        stringBuilder.append(content);
+        return stringBuilder;
     }
 
     /**

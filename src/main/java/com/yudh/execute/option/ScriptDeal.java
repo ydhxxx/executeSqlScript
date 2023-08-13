@@ -1,10 +1,18 @@
 package com.yudh.execute.option;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.CharsetUtil;
 import com.yudh.execute.constant.DataBaseConst;
 import com.yudh.execute.frame.MainFrame;
+import com.yudh.execute.utils.CommandUtils;
 import com.yudh.execute.utils.FileUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +22,7 @@ import java.util.List;
  * @Date 2022/10/23 21:21
  * @Created by 叽里咕噜
  */
+@Slf4j
 public class ScriptDeal {
 
     /**
@@ -31,7 +40,7 @@ public class ScriptDeal {
             FileUtils.getAllFiles(scriptFile,fileArrayList);
 
             list.add(parentDir);
-            String fileName = System.currentTimeMillis() +".sql";
+            String fileName = scriptFile.getName() + "_" + System.currentTimeMillis() +".sql";
             File newScript = new File(parentDir+"\\"+fileName);
             writeScript(newScript,fileArrayList);
             list.add(fileName);
@@ -41,6 +50,24 @@ public class ScriptDeal {
             fileArrayList.add(scriptFile);
             list.add(parentDir);
             list.add(scriptFile.getName());
+        }
+        // 对脚本编码格式进行调整
+        try {
+            String dataBaseCharset = CommandUtils.getDataBaseCharset();
+            boolean isGbk = dataBaseCharset.toUpperCase().contains("GBK");
+            for (File sqlFile : fileArrayList) {
+                Charset fileCharSet = CharsetUtil.defaultCharset(new FileInputStream(sqlFile), new Charset[0]);
+                if (isGbk && StandardCharsets.UTF_8.equals(fileCharSet)) {
+                    log.info("UTF_8转GBK的文件：{}", sqlFile);
+                    CharsetUtil.convert(sqlFile, StandardCharsets.UTF_8, CharsetUtil.CHARSET_GBK); continue;
+                }
+                if (!isGbk && CharsetUtil.CHARSET_GBK.equals(fileCharSet)) {
+                    log.info("GBK转UTF_8的文件：{}", sqlFile);
+                    CharsetUtil.convert(sqlFile, CharsetUtil.CHARSET_GBK, StandardCharsets.UTF_8);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            log.error("转换文本编码失败", e);
         }
 
         return list;

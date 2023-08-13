@@ -2,8 +2,6 @@ package com.yudh.execute;
 
 import com.yudh.execute.frame.MainFrame;
 
-import java.io.File;
-
 /**
  * @Classname Main
  * @Description TODO

@@ -17,6 +17,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.List;
 
@@ -55,6 +56,14 @@ public class MainFrame extends JFrame implements ActionListener {
      * 显示提示信息
      */
     public static JTextArea logText;
+    /**
+     * 文件目录选择按钮
+     */
+    public static JButton fileSelect;
+    /**
+     * 执行脚本按钮
+     */
+    public static JButton execute;
 
     /**
      * 数据库连接对象
@@ -75,6 +84,7 @@ public class MainFrame extends JFrame implements ActionListener {
         init();
         setJPanel();
         getConfig();
+
     }
 
     private void init(){
@@ -85,7 +95,7 @@ public class MainFrame extends JFrame implements ActionListener {
         int y = (int)(toolkit.getScreenSize().getHeight() - getHeight())/2;
         setLocation(x,y);
         // 设置标题
-        setTitle("MYSql脚本自动化工具");
+        setTitle("Sql脚本自动化工具");
         // 设置图片
         ImageIcon imageIcon = new ImageIcon("image/command.png");
         setIconImage(imageIcon.getImage());
@@ -203,9 +213,9 @@ public class MainFrame extends JFrame implements ActionListener {
         Box horizontal1 = Box.createHorizontalBox();
         fileText = new JTextField();
         fileText.setFont(new Font("宋体",Font.BOLD,20));
-        JButton fileSelect = new JButton("文件目录选择");
+        fileSelect = new JButton("文件目录选择");
         fileSelect.setFont(new Font("宋体",Font.BOLD,20));
-        JButton execute = new JButton("执行脚本");
+        execute = new JButton("执行脚本");
         execute.setFont(new Font("宋体",Font.BOLD,20));
         logText = new JTextArea();
         logText.setFont(new Font("宋体",Font.PLAIN,20));
@@ -216,6 +226,10 @@ public class MainFrame extends JFrame implements ActionListener {
         jScrollPane.setPreferredSize(new Dimension(700,370));
         // 设置滚动条一直存在
         jScrollPane.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        // 初始将文件选择按钮以及执行脚本按钮置为不可用状态
+        fileSelect.setEnabled(false);
+        execute.setEnabled(false);
 
         horizontal1.add(fileText);
         horizontal1.add(Box.createHorizontalStrut(30));
@@ -331,9 +345,14 @@ public class MainFrame extends JFrame implements ActionListener {
     public void getConfig(){
         // 默认从配置文件加载数据，不需要提示信息
         File file = new File("file/connect.txt");
-        String config = FileUtils.readFile(file);
+        String config = null;
+        try {
+            config = FileUtils.readFile(file, "GBK").toString();
+        } catch (IOException e) {
+            log.error("读取文件失败", e);
+        }
         if (!StringUtils.isEmpty(config)){
-            String[] configArr = config.split(" ");
+            String[] configArr = config.split("\\n");
             dbTypeText.setSelectedItem(configArr[0]);
             ipPortText.setText(configArr[1]);
             databaseText.setText(configArr[2]);
