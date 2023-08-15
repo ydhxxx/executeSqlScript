@@ -264,6 +264,7 @@ public class MainFrame extends JFrame implements ActionListener {
             @Override
             public void menuSelected(MenuEvent e) {
                 HelpWindow helpWindow = new HelpWindow();
+//                ScriptResultWindow scriptResultWindow = new ScriptResultWindow("21321312312");
             }
 
             @Override
@@ -319,6 +320,7 @@ public class MainFrame extends JFrame implements ActionListener {
             String password = MainFrame.passwordText.getText().trim();
             String dbType = MainFrame.dbTypeText.getSelectedItem().toString();
             JdbcConfig jdbcConfig = new JdbcConfig(ipPort,database,user,password);
+
             List<String> fileConfig = ScriptDeal.generateScript(file);
             log.info("fileConfig,{}",fileConfig);
             try {

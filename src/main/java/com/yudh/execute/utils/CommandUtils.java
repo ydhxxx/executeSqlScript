@@ -3,7 +3,9 @@ package com.yudh.execute.utils;
 
 import com.yudh.execute.bean.JdbcConfig;
 import com.yudh.execute.constant.DataBaseConst;
+import com.yudh.execute.frame.HelpWindow;
 import com.yudh.execute.frame.MainFrame;
+import com.yudh.execute.frame.ScriptResultWindow;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,9 +50,9 @@ public class CommandUtils {
             //执行sh脚本
 
             command = "cmd /c " + preDirectory + " && SET NLS_LANG=" + charset + " && cd "  + scriptPath + " && echo exit | sqlplus " + username + "/" + passWord + "@" +
-                    jdbcConfig.getIp() + ":" + jdbcConfig.getPort() + "/" + jdbcConfig.getDatabase() + " @" + scriptFileName + " >" + logFile.getAbsolutePath() + " 2>&1 ";
+                    jdbcConfig.getIp() + ":" + jdbcConfig.getPort() + "/" + jdbcConfig.getDatabase() + " @\"" + scriptFileName + "\" >" + logFile.getAbsolutePath() + " 2>&1 ";
             String logCommand = "cmd /c " + preDirectory + " && SET NLS_LANG=" + charset + " && cd "  + scriptPath + " && echo exit | sqlplus " + username + "/******@" +
-                    jdbcConfig.getIp() + ":" + jdbcConfig.getPort() + "/" + jdbcConfig.getDatabase() + " @" + scriptFileName + " >" + logFile.getAbsolutePath() + " 2>&1 ";
+                    jdbcConfig.getIp() + ":" + jdbcConfig.getPort() + "/" + jdbcConfig.getDatabase() + " @\"" + scriptFileName + "\" >" + logFile.getAbsolutePath() + " 2>&1 ";
             log.info("脚本执行命令为:{}", logCommand);
         }
         else if (DataBaseConst.MYSQL.equals(dbType)){
@@ -88,8 +90,9 @@ public class CommandUtils {
             }
             message.append(DateUtils.getDateTime()).append(" 命令执行结束");
             log.info("执行脚本结束！");
-//            MainFrame.appendTextArea("执行脚本结束！执行结果请在 " + logFile.getAbsolutePath() + "查看！");
-            MainFrame.appendTextArea("执行脚本结束！执行结果:\n " + message);
+            MainFrame.appendTextArea("执行脚本结束！执行结果请在 " + logFile.getAbsolutePath() + "查看！");
+//            MainFrame.appendTextArea("执行脚本结束！执行结果:\n " + message);
+            ScriptResultWindow scriptResultWindow = new ScriptResultWindow(message.toString());
 
             return message.toString();
         }

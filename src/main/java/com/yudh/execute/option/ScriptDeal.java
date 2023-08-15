@@ -11,10 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * @Classname ScriptDeal
@@ -35,6 +37,8 @@ public class ScriptDeal {
         List<String> list = new ArrayList<>(2);
         List<File> fileArrayList = new ArrayList<>();
         String parentDir;
+        String dataBaseCharset = CommandUtils.getDataBaseCharset();
+        boolean isGbk = dataBaseCharset.toUpperCase().contains("GBK");
         if (scriptFile.isDirectory()){
             parentDir = scriptFile.getAbsolutePath();
             FileUtils.getAllFiles(scriptFile,fileArrayList);
@@ -42,8 +46,9 @@ public class ScriptDeal {
             list.add(parentDir);
             String fileName = scriptFile.getName() + "_" + System.currentTimeMillis() +".sql";
             File newScript = new File(parentDir+"\\"+fileName);
-            writeScript(newScript,fileArrayList);
+            writeScript(newScript,fileArrayList, isGbk ? "GBK" : "utf-8");
             list.add(fileName);
+//            fileArrayList.add(newScript);
         }
         else {
             parentDir = scriptFile.getParentFile().getAbsolutePath();
@@ -53,8 +58,6 @@ public class ScriptDeal {
         }
         // 对脚本编码格式进行调整
         try {
-            String dataBaseCharset = CommandUtils.getDataBaseCharset();
-            boolean isGbk = dataBaseCharset.toUpperCase().contains("GBK");
             for (File sqlFile : fileArrayList) {
                 Charset fileCharSet = CharsetUtil.defaultCharset(new FileInputStream(sqlFile), new Charset[0]);
                 if (isGbk && StandardCharsets.UTF_8.equals(fileCharSet)) {
@@ -73,17 +76,28 @@ public class ScriptDeal {
         return list;
     }
 
-    public static void writeScript(File newScript, List<File> fileList){
+    public static void writeScript(File newScript, List<File> fileList, String charset){
         String separator = " ";
+        String output = "";
         String dbType = MainFrame.dbTypeText.getSelectedItem().toString();
         if (DataBaseConst.MYSQL.equalsIgnoreCase(dbType)){
-            separator = "source ";
+            separator = "source \"";
+            output = "select '";
         }
         else if (DataBaseConst.ORACLE.equalsIgnoreCase(dbType)){
-            separator = "@ ";
+            separator = "@ \"";
+            output = "prompt ";
         }
+        StringJoiner stringJoiner = new StringJoiner("\n");
         for (File file : fileList){
-            FileUtils.writeTxt(newScript,separator + file.getAbsolutePath(),true);
+            stringJoiner.add(output + "begin execute " + file.getAbsolutePath() + (DataBaseConst.MYSQL.equalsIgnoreCase(dbType)? "';":""));
+            stringJoiner.add(separator + file.getAbsolutePath() + "\"");
+            stringJoiner.add(output + "execute end: " + file.getAbsolutePath()+ (DataBaseConst.MYSQL.equalsIgnoreCase(dbType)? "';":""));
+        }
+        try {
+            org.apache.commons.io.FileUtils.writeStringToFile(newScript, stringJoiner.toString(), "GBK", true);
+        } catch (IOException e) {
+            log.error("写入文件数据失败", e);
         }
     }
 }

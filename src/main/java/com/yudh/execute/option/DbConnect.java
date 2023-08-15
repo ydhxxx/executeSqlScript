@@ -46,7 +46,7 @@ public class DbConnect {
         DruidDataSourceBean.setDataSource(dataSourceBean);
         Connection connection = null;
         try {
-            connection = DruidDataSourceBean.dataSource.getConnection();
+            connection = DruidDataSourceBean.dataSource.getConnection(3000);
         } catch (SQLException e) {
             log.error("获取数据库连接失败,", e);
             MainFrame.appendTextArea("ERROR "+e.getMessage());
